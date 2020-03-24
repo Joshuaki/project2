@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+<html>
+    
+    <head>
+        <title>{% block title %}{% endblock %}</title>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+
+        {% block script %}{% endblock %}
+        <meta name = "viewport", content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-grid.css') }}">   
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-grid.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+        
+    </head>
+
+    <body>
+        <div id="top-nav">
+            <div class="navbar">
+                <div class="nav-item">
+                    <a href="#" class="nav-link">Home</a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link">Books</a>
+                </div>
+                
+                
+            </div>
+        </div>
+        <div id="body" style="margin: 0; position: relative;  width: 100%; height: 100%; padding: 10px;">
+            
+
+            {% block body %}{% endblock %}
+        </div>
+        
+        </div>
+        <div id="footer"></div>   
+    </body>
+
+</html>

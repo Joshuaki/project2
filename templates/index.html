@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+
+<html>
+    
+    <head>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+
+        <script type="text/javascript" charset="utf-8">
+            document.addEventListener('DOMContentLoaded', () => {
+
+               
+                document.querySelector('#Name').onsubmit = () => {
+                    
+                    document.querySelector('#result').innerHTML = "This is a Test";
+                    // Initialize a new request
+                    const request = new XMLHttpRequest();
+                    const username = document.querySelector('#username').value
+                    localStorage.setItem('username', username); 
+                    document.querySelector('#localstorage').innerHTML = localStorage.getItem('username');
+                    request.open('POST', '/register');
+                    
+                    // Callback function for when request completes
+                    request.onload = () => {
+
+                        // Extract JSON data from request
+                        const data = JSON.parse(request.responseText);
+                        
+                        document.querySelector('#result').innerHTML = data.users;
+                        //document.querySelector('#result').innerHTML = `Welcome ${data}`;
+                        
+                    }
+
+
+                    //add data to send with request
+                    const data = new FormData();
+                    data.append('username', username)
+
+                    
+
+                    //send request
+                    request.send(data);
+                    return false;
+                };
+
+            });
+            
+            
+        </script>
+
+        <title>SLACK</title>
+    
+        <meta name = "viewport", content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-grid.css') }}">   
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-grid.min.css') }}">
+        
+    </head>
+
+    <body>
+        <div id="top-nav">
+            <div class="navbar">
+                
+            </div>
+        </div>
+
+        <div id="body" style="margin: 0; position: relative;  width: 100%; height: 100%; padding: 10px;">
+            <form id="Name">
+                <input id="username" autocomplete="off" autofocus placeholder="Username" type="text">
+                <input type="submit" value="Register Username">
+            </form>
+
+            
+            <div id="localstorage"></div>
+            <div id="result"></div>
+
+
+            
+        </div>
+
+
+        <div id="footer"></div>   
+    </body>
+
+</html>
