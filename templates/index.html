@@ -8,41 +8,28 @@
         <script type="text/javascript" charset="utf-8">
             document.addEventListener('DOMContentLoaded', () => {
 
+                checkUserName();  
                
                 document.querySelector('#Name').onsubmit = () => {
                     
-                    document.querySelector('#result').innerHTML = "This is a Test";
-                    // Initialize a new request
-                    const request = new XMLHttpRequest();
+        
                     const username = document.querySelector('#username').value
                     localStorage.setItem('username', username); 
                     document.querySelector('#localstorage').innerHTML = localStorage.getItem('username');
-                    request.open('POST', '/register');
-                    
-                    // Callback function for when request completes
-                    request.onload = () => {
-
-                        // Extract JSON data from request
-                        const data = JSON.parse(request.responseText);
-                        
-                        document.querySelector('#result').innerHTML = data.users;
-                        //document.querySelector('#result').innerHTML = `Welcome ${data}`;
-                        
-                    }
-
-
-                    //add data to send with request
-                    const data = new FormData();
-                    data.append('username', username)
-
                     
 
-                    //send request
-                    request.send(data);
-                    return false;
                 };
 
             });
+
+            function checkUserName() {
+                let username = localStorage.getItem('username');
+                if (!username) {
+                    var x = document.getElementById("Name");
+                    x.style.display = "block";
+                }
+                
+            }
             
             
         </script>
@@ -50,6 +37,7 @@
         <title>SLACK</title>
     
         <meta name = "viewport", content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-grid.css') }}">   
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-grid.min.css') }}">

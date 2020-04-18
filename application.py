@@ -3,6 +3,13 @@ import os
 from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
 
+class Channel:
+    def __init__(self, creator, name):
+        self.creator = creator
+        self.name = name
+        self.messages = {}
+    
+
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
