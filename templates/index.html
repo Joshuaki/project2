@@ -1,72 +1,342 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
     
     <head>
+        
+        <meta charset="UTF-8">
+        <meta name = "viewport", content="width=device-width, initial-scale=1.0">
         <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 
-        <script type="text/javascript" charset="utf-8">
-            document.addEventListener('DOMContentLoaded', () => {
-
-                checkUserName();  
-               
-                document.querySelector('#Name').onsubmit = () => {
-                    
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
         
-                    const username = document.querySelector('#username').value
-                    localStorage.setItem('username', username); 
-                    document.querySelector('#localstorage').innerHTML = localStorage.getItem('username');
-                    
-
-                };
-
-            });
-
-            function checkUserName() {
-                let username = localStorage.getItem('username');
-                if (!username) {
-                    var x = document.getElementById("Name");
-                    x.style.display = "block";
-                }
-                
-            }
-            
-            
-        </script>
-
-        <title>SLACK</title>
-    
-        <meta name = "viewport", content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-grid.css') }}">   
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-grid.min.css') }}">
         
+        <title>FLACK</title>
     </head>
 
     <body>
-        <div id="top-nav">
-            <div class="navbar">
+        <div id="navigation">
+            <div class="display-name nav-item">
                 
+            </div>
+            <div class="channel-navigation nav-item">
+                <div id="newChannel">
+                    <form id="createChannel">
+
+                        <div class="container">
+                            <div class="row">
+                                <input type="text" name="channel name" id="channelName" placeholder="Channel Name ..." required="required">
+                            </div>
+                            <div class="row">
+                                <input type="text" name="description" id="channelDescription" placeholder="Channel Description ..." required="required"> 
+                            </div>
+                            <div class="Submit">
+                                <input type="submit">
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+                <ul id="channelList"></ul>
             </div>
         </div>
 
-        <div id="body" style="margin: 0; position: relative;  width: 100%; height: 100%; padding: 10px;">
+        <div id="body" style="border: solid black 1px; margin: 0; position: fixed;  left: 200px; width: 80%; overflow: auto; height: 100%;">
             <form id="Name">
-                <input id="username" autocomplete="off" autofocus placeholder="Username" type="text">
-                <input type="submit" value="Register Username">
+                <input id="displayname" autocomplete="off" autofocus placeholder="Displayname ..." type="text">
+                <input type="submit" value="Register Displayname">
             </form>
 
+
+            <div class="channel-content">
+                <div class="channel-header">
+                    <div class="channel-name">
+
+                    </div>
+                    <div class="channel-description">
+
+                    </div>
+                    <div class="channel-creator">
+
+                    </div>
+                </div>
+                <div id="messageContent">
+                    <div class="messages-container">
+                        <ul id="messages"> 
+                            
+                        </ul>
+                    </div>
+                    
+
+                    
+                    
+
+                </div>
+
+                
+            </div>
             
-            <div id="localstorage"></div>
-            <div id="result"></div>
+            <div id="newMessage" class="container-fluid">
+               
+                    <div class="input-group">
+                        <input class="form-control" name="message"  placeholder="New message ..." id="messageText" required></input>
+                        <button class="btn btn-ico btn-primary rounded-circle" id="send-btn" type="submit">
+                            <span class="glyphicon glyphicon-send" aria-hidden="true"></span>
+                        </button>
+                        
+                    </div>  
+               
+            </div>
+
+            
+
+            
+            
+
+            
+
+        </div> 
+
+        
+
+
+
+
+
 
 
             
-        </div>
+        
 
 
-        <div id="footer"></div>   
+           
+
+
+
+        <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+
+        <script type="text/javascript" charset="utf-8">
+            document.addEventListener('DOMContentLoaded', () => {
+                
+                
+
+                checkDisplayName();  
+               
+                //If user has not registered display name, #Name form will display and displayname saved to localstorage
+                document.querySelector('#Name').onsubmit = () => {
+                    
+                    const displayname = document.querySelector('#displayname').value
+                    localStorage.setItem('displayname', displayname); 
+                    document.querySelector('#localstorage').innerHTML = localStorage.getItem('displayname');
+                    
+
+                };
+
+                load_channelList();
+
+                let current_channel = localStorage.getItem('current channel');
+                if (current_channel) {
+                    load_channel(current_channel);
+                    var x = document.getElementById("newMessage");
+                    x.style.display = "block";
+                };
+                
+
+                
+
+                
+
+                
+                // Create Channel
+                document.querySelector('#createChannel').onsubmit = () => {
+                    
+                    // Initialize Request
+                    const request = new XMLHttpRequest();
+                    // Data for request send
+                    const creator = localStorage.getItem('displayname');
+                    const channelName = document.querySelector('#channelName').value;
+                    const channelDescription = document.querySelector('#channelDescription').value;
+
+                    request.open('POST', '/newChannel');
+
+                    // Callback function for when request completes
+                    request.onload = () => {
+
+                        //Extract JSON data from the request
+                        const data = JSON.parse(request.responseText) 
+                        if (!data[channelName]['description']) {
+                            alert('This channel already currently exists');
+                        } else {
+                            load_channel(channelName);
+                        }
+                        
+                    }
+
+                    // Add data to send with request
+                    const data = new FormData();
+                    data.append('channelName', channelName);
+                    data.append('creator', creator);
+                    data.append('channelDescription', channelDescription)
+
+                    //send request
+                    request.send(data);
+                    return False;
+
+                };
+
+
+                // Connect to websocket
+                var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+
+                // When connected, configure buttons
+                socket.on('connect', () => {
+                    document.querySelector('#send-btn').onclick = () => {
+                        
+                        // timestamp
+                        let d =  new Date();
+                        let time_stamp = `${d.getHours()}:${d.getMinutes()}`;
+                        let display_name = localStorage.getItem('displayname');
+                        let channel_name = localStorage.getItem('current channel');
+                
+                        const message_text = document.querySelector('#messageText').value;
+                        socket.emit('send message', {'time stamp': time_stamp, 'display name': display_name, 'channel name': channel_name, 'message text': message_text});
+                    };
+                    
+                });
+
+                socket.on('announce message', data => {
+                    
+                    
+                    const li = document.createElement('li');
+                    li.innerHTML = `<div class="message-head"><div class="display-name">${data['display name']}</div></div><div class="time-stamp">${data['time stamp']}</div><div class="msg"> ${data['message text']}</div>`;
+                    document.querySelector('#messages').append(li);
+
+                });
+
+                
+
+            });
+
+            //If user has not registered a display name display form for user to register
+            function checkDisplayName() {
+                let displayname = localStorage.getItem('displayname');
+                if (!displayname) {
+                    var x = document.getElementById("Name");
+                    x.style.display = "block";
+                } else {
+                    document.querySelectorAll(".display-name").forEach( link => {
+                        link.innerHTML = `${displayname}`;
+                    })
+                    
+                }
+                
+            }
+
+            function new_message(message_content) {
+
+                // Post new message.
+                const message = document.createElement('div');
+                message.className = 'message';
+                message.innerHTML = message_content;
+
+                // Add post to DOM.
+                document.querySelector('#posts').append(post);
+                };
+
+            function load_channelList() {
+                
+
+                //initialize new request
+                const request = new XMLHttpRequest();
+
+                //Open request for channel list data
+                request.open('GET', '/channelList');
+                request.onload = () => {
+
+                    //channels json data
+                    const channel_list = JSON.parse(request.responseText);
+                    //document.querySelector('#channelList').innerHTML = channel_list;
+
+                    //Add values of channels json data to unordered list
+                    Object.keys(channel_list).forEach((channelName) => {
+                                                                
+                                                                let li = document.createElement('li');
+
+                                                                /*let channel = channel_list[channelName];
+                                                                let description = channel.description;
+                                                                let creator = channel.creator;*/
+                                                                
+                                                                li.innerHTML = `<a class="channel-link" data-channel="${channelName}"># ${channelName}</a>`;
+                                                                document.querySelector('#channelList').append(li);
+                                                                
+                                                            
+                                                            });
+                    document.querySelectorAll('.channel-link').forEach(channel_link => {
+                        channel_link.onclick = () => {
+                            load_channel(channel_link.dataset.channel);
+                            return false;
+                        };
+                  });
+                };
+                request.send();
+            }
+
+            
+            function load_channel(channel_name) {
+                console.log('channel load started');
+                
+                //Set current channel to selected channel
+                localStorage.setItem('current channel', channel_name)
+                
+
+                //initialize request
+                const request = new XMLHttpRequest();
+                //Open request for channel list data
+                request.open('POST', '/channel');
+                console.log('request opened');
+
+                request.onload = () => {
+                    console.log('request loaded');
+                    //channels json data
+                    const channel = JSON.parse(request.responseText);
+                    console.log('response json parsed');
+                    const channel_name = channel['channel name'];
+                    const creator = channel['channel creator'];
+                    const description = channel['channel description'];
+                    const messages = channel['channel messages'];
+                    //console.log(messages);
+                    
+                    document.querySelector(".channel-name").innerHTML = channel_name;
+                    document.querySelector(".channel-description").innerHTML = description;
+                    document.querySelector(".channel-creator").innerHTML = creator;
+                    document.querySelector("#messages").innerHTML = "";
+                    messages.forEach((message) => {
+                        console.log(message);
+                        const li = document.createElement('li');
+                        li.innerHTML = `<div class="message-head"><div class="display-name">${message['user']}</div></div><div class="time-stamp">${message['time stamp']}</div><div class="msg"> ${message['message']}</div>`;
+                        document.querySelector('#messages').append(li);
+                        });
+                };
+                    
+                    
+
+                
+                const data = new FormData();
+                console.log(`${channel_name}`);
+                data.append('channel name', channel_name);
+                request.send(data);
+
+            };
+            
+            
+            
+        </script>
     </body>
 
 </html>

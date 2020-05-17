@@ -10,19 +10,77 @@ html {
 body { 
     width: 100%;    
     position: absolute; 
-    /*height:1500px; */
-    
+    /*height:1500px; */ 
    
 }
 
-#top-nav{
-    width:100%;
-    padding: 10px;
-    /*margin-bottom: 10px;*/
-    background: #f2e6ff;
-    
 
+
+
+
+
+
+/*Channel List navigation */
+#navigation {
+    margin: 0;
+    padding: 0;
+    width: 200px;
+    background-color: rgb(202, 42, 202);
+    position: fixed;
+    height: 100%;
+    overflow: auto;
+    border: solid black 1px;
   }
+
+.nav-item {
+    display: block;
+    color: black;
+    border: solid black 1px;
+    padding: 5px;
+    text-decoration: none;
+
+}
+
+
+#navigation ul {
+    padding: 0;
+    border: solid black 1px;
+    margin: 0;
+}
+
+
+.display-name {
+    color: White;
+    border: solid black 1px;
+    text-align: center;
+}
+
+.nav-item a {
+    list-style-type: none;
+}
+
+@media screen and (max-width: 700px) {
+    #navigation {
+        width: 100%;
+        height: auto;
+        position: relative
+    }
+
+    #navigation .nav-item {
+        float: left;
+    }
+
+    #navigation li {
+        float: left;
+    }
+
+    #body {
+        width: 100%;
+        height: auto;
+        position: relative   
+    }
+}
+
 
   #name {
     width: 100%;
@@ -36,3 +94,62 @@ body {
     border: solid black 1px;
     display: none;
   }
+
+  #channel {
+      border: solid black 1px;
+  }
+
+  .channel-content {
+      padding: 20px;
+      border: solid black 1px;
+      /*position: absolute;*/
+      width: 95%;
+      height: 90%;
+      margin-bottom: 5px;
+      overflow: hidden;
+      background: lightpink;
+  }
+
+  
+
+  ul {
+      border: solid black 1px;
+      background-color: lightpink;
+      list-style-type: none;
+
+  }
+
+  .messages-container {
+      background-color: lightgray;
+      height: 400px;
+  }
+
+  #newMessage {
+      bottom: 0;
+      margin: 5px;
+      width: 90%;
+      position: absolute;
+      border: 1px solid black;
+      padding: 5px;
+      display: none;
+      
+
+  }
+
+  .message-head {
+      float: left;
+  }
+
+  #messageText {
+      border-radius: 45px;
+      margin: 5px;
+      
+  }
+
+  #send-btn {
+      /*border-radius: 50%;*/
+      margin: 5px;
+  }
+
+  
+  
