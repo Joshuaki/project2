@@ -129,14 +129,14 @@
                 checkDisplayName();  
                
                 //If user has not registered display name, #Name form will display and displayname saved to localstorage
-                document.querySelector('#Name').onsubmit = () => {
+                /*document.querySelector('#Name').onsubmit = () => {
                     
                     const displayname = document.querySelector('#displayname').value
                     localStorage.setItem('displayname', displayname); 
                     document.querySelector('#localstorage').innerHTML = localStorage.getItem('displayname');
                     
 
-                };
+                };*/
 
                 load_channelList();
 
@@ -156,6 +156,8 @@
                 // Create Channel
                 document.querySelector('#createChannel').onsubmit = () => {
                     
+                    
+
                     // Initialize Request
                     const request = new XMLHttpRequest();
                     // Data for request send
@@ -170,11 +172,13 @@
 
                         //Extract JSON data from the request
                         const data = JSON.parse(request.responseText) 
+                        
                         if (!data[channelName]['description']) {
                             alert('This channel already currently exists');
                         } else {
                             load_channel(channelName);
                         }
+                        
                         
                     }
 
@@ -198,56 +202,113 @@
                 socket.on('connect', () => {
                     document.querySelector('#send-btn').onclick = () => {
                         
-                        // timestamp
-                        let d =  new Date();
-                        let time_stamp = `${d.getHours()}:${d.getMinutes()}`;
-                        let display_name = localStorage.getItem('displayname');
-                        let channel_name = localStorage.getItem('current channel');
+                        // data associated with message appended to the messages attribute in channel object
+                        const d =  new Date();
+                        const current_hours = ("0" + d.getHours()).slice(-2);
+                        const current_minutes = ("0" + d.getMinutes()).slice(-2);
+
+                        const time_stamp = `${current_hours}:${current_minutes}`;
+                        const display_name = localStorage.getItem('displayname');
+                        const channel_name = localStorage.getItem('current channel');
                 
                         const message_text = document.querySelector('#messageText').value;
                         socket.emit('send message', {'time stamp': time_stamp, 'display name': display_name, 'channel name': channel_name, 'message text': message_text});
+
+
                     };
+
+                    document.querySelectorAll('.delete-msg').forEach(
+                        (button) => {
+                            button.onclick = () => {
+                                // data associated with message to be deleted for messages attribute in channel object
+                                let id = parseInt(button.parentNode.id);
+                                let display_name = button.dataset.displayname;
+                                let time_stamp = button.dataset.timestamp;
+                                let message_text = button.dataset.msg;
+                                let channel_name = localStorage.getItem('current channel'); 
+                                console.log({'id': id, 'time stamp': time_stamp, 'display name': display_name, 'channel name': channel_name, 'message text': message_text});
+
+                                socket.emit('delete message', {'id': id, 'time stamp': time_stamp, 'display name': display_name, 'channel name': channel_name, 'message text': message_text})
+                                button.parentElement.remove();
+                            }
+                        }
+                    );
                     
+                
+
                 });
 
                 socket.on('announce message', data => {
                     
                     
+                    
                     const li = document.createElement('li');
-                    li.innerHTML = `<div class="message-head"><div class="display-name">${data['display name']}</div></div><div class="time-stamp">${data['time stamp']}</div><div class="msg"> ${data['message text']}</div>`;
+                    li.setAttribute('id', `${data['id']}`);
+                    li.innerHTML = `<div class="message-head"><div class="display-name">${data['display name']}</div></div><div class="time-stamp">${data['time stamp']}</div><div class="msg"> ${data['message text']}</div><button class="delete-msg" data-displayname = "${data['display name']}" data-timestamp = "${data['time stamp']}" data-msg="${data['message text']}">DELETE</button>`;
+                    
+                    
                     document.querySelector('#messages').append(li);
+
+                    // Function to delete message
+                    document.querySelectorAll('.delete-msg').forEach(
+                        (button) => {
+                            button.onclick = () => {
+
+                                //If current user is not message author, exit    
+                                let display_name = button.dataset.displayname;
+                                if (display_name !== localStorage.getItem('displayname')) {
+                                    alert(`Only message owner can delete`);
+                                    return false;
+                                }
+
+
+                                // data associated with message to be deleted for messages attribute in channel object
+                                let id = parseInt(button.parentNode.id);
+                                
+                                let time_stamp = button.dataset.timestamp;
+                                let message_text = button.dataset.msg;
+                                let channel_name = localStorage.getItem('current channel'); 
+                                console.log({'id': id, 'time stamp': time_stamp, 'display name': display_name, 'channel name': channel_name, 'message text': message_text});
+
+                                socket.emit('delete message', {'id': id, 'time stamp': time_stamp, 'display name': display_name, 'channel name': channel_name, 'message text': message_text})
+                                button.parentElement.remove()
+
+                                
+                                
+
+                            }
+                        }
+                    );
+                    
+
+                    
 
                 });
 
                 
 
+                
+
             });
 
-            //If user has not registered a display name display form for user to register
+            
+
             function checkDisplayName() {
-                let displayname = localStorage.getItem('displayname');
-                if (!displayname) {
-                    var x = document.getElementById("Name");
-                    x.style.display = "block";
-                } else {
-                    document.querySelectorAll(".display-name").forEach( link => {
-                        link.innerHTML = `${displayname}`;
-                    })
-                    
-                }
-                
-            }
-
-            function new_message(message_content) {
-
-                // Post new message.
-                const message = document.createElement('div');
-                message.className = 'message';
-                message.innerHTML = message_content;
-
-                // Add post to DOM.
-                document.querySelector('#posts').append(post);
+                var displayname = localStorage.getItem('displayname');
+                while (!displayname) {
+                    var displayname = prompt("Please enter your display name");
+                    localStorage.setItem('displayname', displayname);
+                    if (displayname) {
+                        alert(`Welcome ${displayname}`);
+                    };
                 };
+
+                
+
+                document.querySelectorAll(".display-name").forEach( link => {
+                        link.innerHTML = `${displayname}`;
+                });
+            };
 
             function load_channelList() {
                 
@@ -289,6 +350,8 @@
 
             
             function load_channel(channel_name) {
+
+                /*window.history.pushState('','','/');*/
                 console.log('channel load started');
                 
                 //Set current channel to selected channel
@@ -298,10 +361,15 @@
                 //initialize request
                 const request = new XMLHttpRequest();
                 //Open request for channel list data
-                request.open('POST', '/channel');
+                /*request.open('POST', '/channel');*/
+                request.open('GET', `/channel/${channel_name}`);
+
+
                 console.log('request opened');
 
                 request.onload = () => {
+                    
+
                     console.log('request loaded');
                     //channels json data
                     const channel = JSON.parse(request.responseText);
@@ -319,20 +387,121 @@
                     messages.forEach((message) => {
                         console.log(message);
                         const li = document.createElement('li');
-                        li.innerHTML = `<div class="message-head"><div class="display-name">${message['user']}</div></div><div class="time-stamp">${message['time stamp']}</div><div class="msg"> ${message['message']}</div>`;
+                        li.setAttribute('id', `${message['id']}`);
+                        li.innerHTML = `<div class="message-head"><div class="display-name">${message['user']}</div></div><div class="time-stamp">${message['time stamp']}</div><div class="msg"> ${message['message']}</div><button class="delete-msg" data-displayname = "${message['user']}" data-timestamp = "${message['time stamp']}" data-msg="${message['message']}">DELETE</button>`;
                         document.querySelector('#messages').append(li);
                         });
+
+                    var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+
+                    document.querySelectorAll('.delete-msg').forEach(
+                        (button) => {
+                            button.onclick = () => {
+
+                                // If current user is not author, cannot delete message
+                                let display_name = button.dataset.displayname;
+                                if (display_name !== localStorage.getItem('displayname')) {
+                                    alert(`Only message owner can delete`);
+                                    return false;
+                                }
+
+
+                                // data associated with message to be deleted for messages attribute in channel object
+                                let id = parseInt(button.parentNode.id);
+                                let time_stamp = button.dataset.timestamp;
+                                let message_text = button.dataset.msg;
+                                let channel_name = localStorage.getItem('current channel'); 
+                                console.log({'id': id, 'time stamp': time_stamp, 'display name': display_name, 'channel name': channel_name, 'message text': message_text});
+
+                                socket.emit('delete message', {'id': id, 'time stamp': time_stamp, 'display name': display_name, 'channel name': channel_name, 'message text': message_text})
+                                button.parentElement.remove()
+
+                                
+                                
+
+                            }
+                        }
+                    );
+                    
+                    
+                   
+                    
+                        
                 };
                     
-                    
-
                 
-                const data = new FormData();
-                console.log(`${channel_name}`);
-                data.append('channel name', channel_name);
-                request.send(data);
+                request.send();
 
             };
+
+
+            /*window.onpopstate = e => {
+                const data =  e.state;
+                console.log(data)
+                document.title = data.title;
+                localStorage.setItem('current channel', data.title);
+                document.getElementById("body").innerHTML = data['channel content'];
+            }*/
+
+            
+           //Update content on popping state
+
+           /*
+            window.onpopstate = e => {
+                const data =  e.state;
+                console.log(data)
+                document.title = data.title;
+                localStorage.setItem('current channel', data.title);
+                document.getElementById("body").innerHTML = data['channel content'];
+
+                var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+
+                document.querySelector('#send-btn').onclick = () => {
+                        
+                        // data associated with message appended to the messages attribute in channel object
+                        const d =  new Date();
+                        const current_hours = ("0" + d.getHours()).slice(-2);
+                        const current_minutes = ("0" + d.getMinutes()).slice(-2);
+
+                        const time_stamp = `${current_hours}:${current_minutes}`;
+                        const display_name = localStorage.getItem('displayname');
+                        const channel_name = localStorage.getItem('current channel');
+                
+                        const message_text = document.querySelector('#messageText').value;
+                        socket.emit('send message', {'time stamp': time_stamp, 'display name': display_name, 'channel name': channel_name, 'message text': message_text});
+
+
+                    };
+
+                document.querySelectorAll('.delete-msg').forEach(
+                        (button) => {
+                            button.onclick = () => {
+                                // data associated with message to be deleted for messages attribute in channel object
+                                let id = parseInt(button.parentNode.id);
+                                let display_name = button.dataset.displayname;
+                                let time_stamp = button.dataset.timestamp;
+                                let message_text = button.dataset.msg;
+                                let channel_name = localStorage.getItem('current channel'); 
+                                console.log({'id': id, 'time stamp': time_stamp, 'display name': display_name, 'channel name': channel_name, 'message text': message_text});
+
+                                socket.emit('delete message', {'id': id, 'time stamp': time_stamp, 'display name': display_name, 'channel name': channel_name, 'message text': message_text})
+                                button.parentElement.remove()
+
+                                
+                                
+
+                            }
+                        }
+                    );
+
+                
+            
+                
+            }
+            
+            
+            */
+            
             
             
             
